@@ -45,7 +45,7 @@ def calculate_psar(data, af=0.02, af_max=0.2):
   af_step = af  # Current acceleration factor
 
   for i in range(1, len(data)):
-    # Update Extreme Price
+    # Update Extreme Price if the current High is greater than the existing ep
     if data.iloc[i] > ep:
       ep = data.iloc[i]
 
