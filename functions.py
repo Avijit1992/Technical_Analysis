@@ -55,4 +55,4 @@ def ticker_list():
     'ADANIGREEN.NS',
     'WIPRO.NS',
     'COALINDIA.NS']
-    return ticker
+    return print(ticker)
