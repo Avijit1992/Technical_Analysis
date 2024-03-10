@@ -18,7 +18,3 @@ def explain_macd():
   st.write("**Interpretations:**")
   st.markdown("* **Crossovers:** When the MACD line crosses above the signal line, it might signal a potential **bullish** opportunity. Conversely, a crossover below the signal line could suggest a **bearish** signal.")
   st.markdown("* **Divergence:** When the price and MACD move in opposite directions (e.g., price continues to rise while MACD falls), it can indicate a potential **divergence** and a possible trend reversal.")
-
-def hello():
-  print('Hello')
-  
