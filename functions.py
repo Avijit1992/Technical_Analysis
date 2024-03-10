@@ -40,7 +40,7 @@ def calculate_psar(data, af=0.02, af_max=0.2):
 
   # Initialize variables
   import pandas as pd
-  data = pd.Dataframe(data)
+  data = pd.DataFrame(data)
   psar = [data.iloc[0]]  # Start with the first high price as the initial PSAR
   ep = data.iloc[0]  # Initialize Extreme Price (initial high)
   af_step = af  # Current acceleration factor
