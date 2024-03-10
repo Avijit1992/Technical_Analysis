@@ -1,3 +1,6 @@
+def calculate_ema(data, window):
+  return data.ewm(span=window, min_periods=window, adjust=False).mean()
+
 def explain_sma_ema():
   """Displays explanation of SMA and EMA"""
   st.write("**Trend direction:**")
