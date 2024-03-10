@@ -24,35 +24,3 @@ def explain_macd():
   st.markdown("* **Crossovers:** When the MACD line crosses above the signal line, it might signal a potential **bullish** opportunity. Conversely, a crossover below the signal line could suggest a **bearish** signal.")
   st.markdown("* **Divergence:** When the price and MACD move in opposite directions (e.g., price continues to rise while MACD falls), it can indicate a potential **divergence** and a possible trend reversal.")
 
-def ticker_list():
-    ticker = ['RELIANCE.NS',
-    'TCS.NS',
-    'HDFCBANK.NS',
-    'ICICIBANK.NS',
-    'INFY.NS',
-    'HINDUNILVR.NS',
-    'BHARTIARTL.NS',
-    'ITC.NS',
-    'SBIN.NS',
-    'LICI.NS',
-    'LT.NS',
-    'BAJFINANCE.NS',
-    'HCLTECH.NS',
-    'KOTAKBANK.NS',
-    'AXISBANK.NS',
-    'ASIANPAINT.NS',
-    'TITAN.NS',
-    'ADANIENT.NS',
-    'MARUTI.NS',
-    'ULTRACEMCO.NS',
-    'SUNPHARMA.NS',
-    'NTPC.NS',
-    'BAJAJFINSV.NS',
-    'DMART.NS',
-    'TATAMOTORS.NS',
-    'ONGC.NS',
-    'NESTLEIND.NS',
-    'ADANIGREEN.NS',
-    'WIPRO.NS',
-    'COALINDIA.NS']
-    return print(ticker)
