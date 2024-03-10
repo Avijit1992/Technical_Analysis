@@ -2,6 +2,7 @@ def calculate_ema(data, window):
   return data.ewm(span=window, min_periods=window, adjust=False).mean()
 
 def explain_sma_ema():
+  import streamlit as st
   """Displays explanation of SMA and EMA"""
   st.write("**Trend direction:**")
   st.markdown("* Both SMA and EMA can be used to identify the overall trend. If the indicator is rising, it suggests an uptrend, and vice versa. You might consider buying during uptrends and selling during downtrends.")
@@ -12,6 +13,7 @@ def explain_sma_ema():
 
 
 def explain_macd():
+  import streamlit as st
   """Displays explanation of MACD"""
   st.write("**The MACD Indicator:**")
   st.markdown("* The MACD (Moving Average Convergence Divergence) is a technical indicator used to identify trend direction, momentum, and potential buying and selling opportunities.")
