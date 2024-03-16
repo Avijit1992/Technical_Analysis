@@ -1,35 +1,30 @@
 import streamlit as st
 import pandas as pd
-import yfinance as yf
 from datetime import date, timedelta
 import plotly.express as px
-import plotly.graph_objects as go
-import requests
-
-url = 'https://raw.githubusercontent.com/Avijit1992/Technical_Analysis/main/functions.py'
-response = requests.get(url)
-
-with open('functions.py', 'wb') as f:
-    f.write(response.content)
-
+import pickle
 import functions as fn
 
 
-
-st.set_page_config(layout='wide')
-
-# Define a list of supported stock tickers
 ticker_list = ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'ICICIBANK.NS', 'INFY.NS', 'HINDUNILVR.NS', 'BHARTIARTL.NS', 'ITC.NS', 
                'SBIN.NS', 'LICI.NS', 'LT.NS', 'BAJFINANCE.NS', 'HCLTECH.NS', 'KOTAKBANK.NS', 'AXISBANK.NS', 'ASIANPAINT.NS', 
                'TITAN.NS', 'ADANIENT.NS', 'MARUTI.NS', 'ULTRACEMCO.NS', 'SUNPHARMA.NS', 'NTPC.NS', 'BAJAJFINSV.NS', 'DMART.NS', 'TATAMOTORS.NS', 'ONGC.NS', 'NESTLEIND.NS', 'ADANIGREEN.NS', 'WIPRO.NS', 'COALINDIA.NS']
+
+# Load data from file
+with open('data.pkl', 'rb') as f:
+  loaded_data = pickle.load(f)
+# Define a list of supported stock tickers
 
 # Get today's date and set default start date one month earlier
 today = date.today()
 default_start_date = today - timedelta(days=100)
 
+st.set_page_config(layout='wide')
+
+
 # Create sidebar for user input
 with st.sidebar:
-    selected_ticker = st.selectbox("Select Stock:", ticker_list)
+    selected_ticker = st.selectbox("Select Stock:", ticker_list,key="selected_ticker",index=0 )
     start_date = st.date_input("Start Date:", default_start_date)
     end_date = st.date_input("End Date:", today)
     sma_period = st.number_input("SMA Period:", min_value=1, value=20)  
@@ -50,12 +45,11 @@ if start_date > end_date:
 #df = yf.download("DLF.NS", start=default_start_date, end=today)
 #sma_period = 20
 
-# Download stock data
-try:
-    df = yf.download(selected_ticker, start=start_date, end=end_date)
-except Exception as e:
-    st.error(f"Error downloading data for {selected_ticker}: {e}")
-    st.stop()
+# Assuming 'selected_ticker' is a key in loaded_data
+df = pd.DataFrame(loaded_data[selected_ticker])
+df['date'] = pd.to_datetime(df['date'])
+df = df.set_index('date')
+df = df.loc[start_date:end_date]
 
 # Calculate SMA and EMA
 df["SMA"] = df["Close"].rolling(window=sma_period).mean()
@@ -91,8 +85,8 @@ signal_line = fn.calculate_ema(macd, 9)  # Signal window - 9
 df['MACD'] = macd
 df['Signal Line'] = signal_line
 
-df2 = df.dropna()
-
+df2 = df.copy()
+df2.dropna(inplace = True)
 custom_colors = {'MACD': 'green', 'Signal Line': 'black'}
 # Plot MACD
 fig_MACD = px.line(
