@@ -1,3 +1,130 @@
+def download_data_yfinance(credential_path, gsheet_id, ticker_list,start_date=False, new_ticker=False):
+    """
+    Downloads stock data for a list of tickers from Yahoo Finance and writes it to a Google Sheet.
+
+    Args:
+        start_date (datetime): The starting date for downloading data for new tickers (YYYY-MM-DD format).
+        credential_path (str): Path to the Google service account credentials file (JSON format).
+        gsheet_id (str): The ID of the Google Sheet to write the data to.
+        ticker_list (list): A list of stock tickers to download data for.
+        new_data (bool, optional): If True, creates a new worksheet for each ticker. Defaults to False (appends data to existing sheets).
+    """
+
+    # Load Modules
+    import gspread
+    from google.oauth2.service_account import Credentials
+    import yfinance as yf
+    import pandas as pd
+    from datetime import timedelta, date, datetime
+    
+    
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets"
+    ]
+    creds = Credentials.from_service_account_file(credential_path, scopes=scopes)
+    client = gspread.authorize(creds)
+    sheet_id = gsheet_id
+    workbook = client.open_by_key(sheet_id)
+
+    # Get today's date and set default start date one month earlier
+    
+    # Create an empty dictionary to store sheet data
+    sheet_data = {}
+
+    # Loop through each worksheet in the workbook
+    for sheet in workbook.worksheets():
+      sheet_name = sheet.title
+    
+      # Use get_all_records to get data as a list of dictionaries
+      sheet_records = pd.DataFrame(sheet.get_all_records())
+    
+      # Add data for this sheet to the main dictionary
+      sheet_data[sheet_name] = sheet_records
+      
+         
+    # Define a list of supported stock tickers
+    ticker_list = ticker_list
+    count = 0
+    format = '%Y-%m-%d'
+    for stock_name in ticker_list:
+        
+        # Handle new data or existing sheet scenario
+        if new_ticker:
+            end_date = date.today()
+            default_start_date = start_date
+            # Download data from Yahoo Finance
+            try:
+              df = yf.download(stock_name, start=default_start_date, end=end_date)
+            except Exception as e:
+              print(f"Error downloading data for {stock_name}: {e}")
+              continue  # Skip to next ticker on download error
+            # Add a 'date' column with formatted date strings
+            df['date'] = df.index.astype(str)
+            df = df.applymap(lambda x: x.strftime(format) if pd.api.types.is_datetime64_dtype(x) else x)
+            # Create a new worksheet for the current stock
+                        
+            workbook.add_worksheet(title=stock_name, rows=365 * 30, cols=20)
+            worksheet = workbook.worksheet(stock_name)
+            
+            # Write the DataFrame headers and data to the worksheet
+            try:
+              worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+              print('Done : ' + stock_name)
+            except Exception as e:
+              print(f"Error uploading data for {stock_name}: {e}")
+            print('Done : ' + stock_name)
+            
+        else:
+            # Access the existing worksheet for the stock
+            # worksheet = workbook.worksheet(stock_name)
+
+            # Read existing data from the worksheet
+            # ex_df = pd.DataFrame(worksheet.get_all_records())
+            #print(str(ex_df[['date']].iloc[-1])[8:])
+            ex_df = sheet_data.get(sheet_name)
+            ex_df['date'] = pd.to_datetime(ex_df['date'])
+            ex_df = ex_df.sort_values(by='date')
+            # df['col1'].iloc[-1].astype(str)
+            date_string = ex_df['date'].iloc[-1]
+            if date_string.date() < date.today()-timedelta(days=1):
+                start_date = date_string.date()+ timedelta(days=1)
+                end_date=date.today()
+                # Download data from Yahoo Finance
+                try:
+                  df = yf.download(stock_name, start=default_start_date, end=end_date)
+                except Exception as e:
+                  print(f"Error downloading data for {stock_name}: {e}")
+                  continue  # Skip to next ticker on download error
+                df['date'] = df.index
+                # Concatenate the existing and downloaded dataframes (ignoring duplicate indices)
+                ex_df = pd.concat([ex_df, df], ignore_index=True)
+                sheet_data[stock_name] = ex_df
+                count = 0
+                # Update the worksheet with the combined data (headers and values)
+                # worksheet.update([ex_df.columns.values.tolist()] + ex_df.values.tolist())
+                # print('Done : ' + stock_name)
+            else:
+                ex_df = sheet_data.get(sheet_name)
+                ex_df['date'] = pd.to_datetime(ex_df['date'])
+                ex_df = ex_df.sort_values(by='date')
+                count = 1
+                print("Data Already Updated : "+stock_name)
+            
+    print(count)        
+    if (new_ticker == False and count == 0):
+        for stock_name in ticker_list:
+            worksheet = workbook.worksheet(stock_name)
+            try:
+                worksheet.update([sheet_data[stock_name].columns.values.tolist()] + sheet_data[stock_name].values.tolist())    
+            except Exception as e:
+              print(f"Error uploading data for {stock_name}: {e}")
+            print('Done : ' + stock_name)
+                
+    print('Data Updated')
+    
+    return sheet_data
+
+
 def calculate_ema(data, window):
   return data.ewm(span=window, min_periods=window, adjust=False).mean()
 
@@ -66,3 +193,4 @@ def calculate_psar(data, af=0.02, af_max=0.2):
       af_step = af  # Reset acceleration if PSAR touches Extreme Price
 
   return pd.Series(psar, index=data.index, name='PSAR')
+
